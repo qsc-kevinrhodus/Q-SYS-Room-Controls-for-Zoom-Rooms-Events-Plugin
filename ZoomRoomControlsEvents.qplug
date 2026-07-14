@@ -6,7 +6,7 @@ PluginInfo =
     Author = "K. Rhodus // Q-SYS",
     Description = "Room Controls for Zoom Room Events Plugin",
     ShowDebug = false,
-    BuildVersion = "9"
+    BuildVersion = "10"
   };
 
 function GetColor(props)
@@ -609,7 +609,7 @@ if Controls then
     --Open Socket with pcall protection so a failed Listen sets a fault
     --instead of crashing the plugin.
     function openSocket()
-        local ok, err = pcall(function() ZRC:Listen(Controls.Port.String) end)
+        ok, err = pcall(function() ZRC:Listen(Controls.Port.String) end)
         if ok then
             Controls.Status.Value = 5
             Controls.Status.String = "Waiting for Connection"
