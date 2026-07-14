@@ -1,5 +1,5 @@
 # Room Controls for Zoom Room Events Plugin
-![Plugin](https://img.shields.io/badge/Format-Q--SYS_Plugin-green)![Version](https://img.shields.io/badge/Version-1.0-red)![Encrpytion](https://img.shields.io/badge/Encrpytion-None-orange)![MIT License](https://img.shields.io/badge/license-MIT-blue)![Availability](https://img.shields.io/badge/Availability-Q--SYS_Communities_for_Developers-purple)
+![Plugin](https://img.shields.io/badge/Format-Q--SYS_Plugin-green)![Version](https://img.shields.io/badge/Version-1.1-red)![Encrpytion](https://img.shields.io/badge/Encrpytion-None-orange)![MIT License](https://img.shields.io/badge/license-MIT-blue)![Availability](https://img.shields.io/badge/Availability-Q--SYS_Communities_for_Developers-purple)
 
 
 This Q-SYS plugin leverages Room Controls for Zoom Room to send one-way event messages locally over TCP from the Zoom Room to Q-SYS. Each event has a corresponding trigger output. This plugin requires external logic to track room state (see provided example file). This plugin automatically creates a JSON profile to be loaded into Zoom Admin portal. This plugin leverages the 'events only' style to allow it to run in the background of a Zoom Room. The plugin hosts its own TCPSocketServer which eliminates the reconnect issues when using ECP for Room Controls. This plugin can work with any Zoom Room system, regardless of compute OS or if the system is utilizing Q-SYS bridging. 
@@ -7,6 +7,8 @@ This Q-SYS plugin leverages Room Controls for Zoom Room to send one-way event me
 
 ## Version History
 
+ - **Version 1.1**
+	 - Resolved issue where failure to open TCP socket would lock up plugin
  - **Version 1.0**
 	 - Initial Release
 
@@ -31,6 +33,11 @@ Included with the repository is an example file that walks through multiple use 
 - Use `ExportConfig` to save the configuration to the Core or copy directly from the plugin
 - Provide the JSON configuration to the client's Zoom administrator to load into Zoom Admin Portal
 - Expose the desired pins from the plugin to drive logic in your design. 
+
+> **Meeting events:** This plugin subscribes to the newer `zr_zoom_meeting_*` (native Zoom meetings) and `zr_interop_meeting_*` (interop meetings) events rather than the legacy generic `zr_meeting_started`/`zr_meeting_ended` commands. This allows native and interop meetings to be distinguished and keeps the legacy commands out of the generated JSON room configuration.
+
+
+> **Upgrading:** When updating the plugin, the JSON room configuration may change between versions. Breaking changes will be documented in the release notes. Please regenerate the configuration with `BuildConfig` and have the Zoom administrator reload it into the Zoom Admin Portal to ensure the room and plugin stay in sync.
 
 
 ## Control Pins

@@ -1,12 +1,12 @@
 PluginInfo =
   {
     Name = "Room Controls for Zoom Room Events",
-    Version = "1.0",
+    Version = "1.1",
     Id = "ad52fdb7-0b98-4955-b5b6-28d6a6c83fd0",
     Author = "K. Rhodus // Q-SYS",
     Description = "Room Controls for Zoom Room Events Plugin",
     ShowDebug = false,
-    BuildVersion = "8"
+    BuildVersion = "9"
   };
 
 function GetColor(props)
@@ -490,6 +490,9 @@ if Controls then
 
     Version History:
     1.0 - Initial Build
+    1.1 - Resolved issue where failure to open TCP socket would lockup plugin
+        - Uses zr_zoom_meeting_*/zr_interop_meeting_* events only (legacy zr_meeting_started/ended excluded from the generated JSON config)
+        - NOTE: Regenerate the JSON configuration (BuildConfig) and reload it into the Zoom Admin Portal when updating to this version
 
     ]]--
 
@@ -603,21 +606,31 @@ if Controls then
     ZRC=TcpSocketServer:New()
     sockets = {}
 
+    --Open Socket with pcall protection so a failed Listen sets a fault
+    --instead of crashing the plugin.
+    function openSocket()
+        local ok, err = pcall(function() ZRC:Listen(Controls.Port.String) end)
+        if ok then
+            Controls.Status.Value = 5
+            Controls.Status.String = "Waiting for Connection"
+        else
+            Controls.Status.Value = 2
+            Controls.Status.String = "Error Opening UDP Socket"
+            print("Error Opening Socket: "..tostring(err))
+        end
+    end
+
     --Open Server
-    if Controls.Port.String ~= "" then 
-        ZRC:Listen(Controls.Port.String)
-        Controls.Status.Value = 5
-        Controls.Status.String = "Waiting for Connection"
+    if Controls.Port.String ~= "" then
+        openSocket()
     else
         Controls.Status.Value = 2
         Controls.Status.String = "No Port Selected"
     end
 
     Controls.Port.EventHandler = function(ctl)
-        if ctl.String ~= "" then 
-            ZRC:Listen(Controls.Port.String)
-            Controls.Status.Value = 5
-            Controls.Status.String = "Waiting for Connection"
+        if ctl.String ~= "" then
+            openSocket()
         end
     end
 
@@ -649,10 +662,8 @@ if Controls then
       end
       collectgarbage()
       ZRC:Close()
-      if Controls.Port.String ~= "" then 
-        ZRC:Listen(Controls.Port.String)
-        Controls.Status.Value = 5
-        Controls.Status.String = "Waiting for Connection"
+      if Controls.Port.String ~= "" then
+        openSocket()
       else
         Controls.Status.Value = 2
         Controls.Status.String = "No Port Selected"
